@@ -141,4 +141,9 @@ public:
   D keyOf(const VIDX& i) const {
   	return PointerArray[i] -> distance;
   };
+
+  D topKey() const {
+  	if (root == NULL) return INFINITY;
+  	return root -> distance;
+  }
 };
