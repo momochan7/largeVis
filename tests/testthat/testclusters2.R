@@ -22,7 +22,7 @@ test_that("dbscan matches iris", {
 	expect_lt(sum(dbclusters$cluster != irisclustering$cluster), 3)
 })
 
-test_that("dbscan matches dbscan when the neighborhoods are complete", {
+test_that("dbscan matches dbscan on jain when the neighborhoods are complete", {
 	load(system.file(package = "largeVis", "extdata/jaindata.Rda"))
 	jainclusters <- lv_dbscan(edges = jaindata$edges, neighbors = jaindata$neighbors, eps = 2, minPts = 5, verbose = FALSE)
 	expect_equal(jainclusters$cluster, jaindata$dbclusters)
@@ -67,7 +67,11 @@ test_that("optics matches optics reachdist", {
 })
 
 load(system.file(package = "largeVis", "extdata/jaindata.Rda"))
-jainclusters <- lv_optics(edges = jaindata$edges, neighbors = jaindata$neighbors, eps = 4, minPts = 5, verbose = FALSE)
+jainclusters <- lv_optics(edges = jaindata$edges,
+													neighbors = jaindata$neighbors,
+													eps = 4,
+													minPts = 5,
+													verbose = FALSE)
 
 test_that("optics matches optics core on jain when the neighborhoods are complete", {
 	expect_equal(is.infinite(jainclusters$coredist), is.infinite(jaindata$coredist))

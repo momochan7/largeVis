@@ -121,6 +121,7 @@ List optics_cpp(arma::sp_mat& edges,
 		long long p = seeds.pop();
 		orderedPoints.push_back(p);
 		visited[p] = true;
+		reachdist[p] = seeds.keyOf(p);
 		progress.increment();
 		if (coredist[p] == INFINITY) continue;
 		double cdp = coredist[p];
