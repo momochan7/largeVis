@@ -13,7 +13,6 @@ class Visualizer {
 protected:
   const dimidxtype D;
   const int M;
-  const int M2;
 
   vertexidxtype * const targetPointer;
   vertexidxtype * const sourcePointer;
@@ -46,7 +45,7 @@ public:
              int M,
              distancetype rho,
              vertexidxtype* ps,
-             iterationtype n_samples) : D{D}, M{M}, M2(M * 2),
+             iterationtype n_samples) : D{D}, M{M},
                                     targetPointer{targetPtr},
                                     sourcePointer{sourcePtr},
                                     coordsPtr{coordPtr},
@@ -54,12 +53,12 @@ public:
                                     rho{rho},
                                     rhoIncrement((rho - 0.0001) / n_samples),
                                     ps{ps} { }
+	virtual ~Visualizer() {
 #ifdef _OPENMP
-	~Visualizer() {
 		if (storedThreads > 0) omp_set_num_threads(storedThreads);
+#endif
 		delete grad;
 	}
-#endif
 
 	void initAlias(const distancetype* posWeights,
                  const distancetype* negWeights,
@@ -93,15 +92,10 @@ public:
   	edgeidxtype e_ij;
   	int m, example = 0;
   	vertexidxtype i, j, k;
-  	dimidxtype d;
   	coordinatetype firstholder[10], secondholder[10], * y_i, * y_j;
 
     distancetype localRho = rho;
     while (example++ != batchSize && localRho > 0) {
-    	int m, shortcircuit;
-    	vertexidxtype * searchBegin, * searchEnd;
-    	coordinatetype firstholder[10], secondholder[10], * y_i, * y_j;
-
       e_ij = posAlias();
 
       j = targetPointer[e_ij];
@@ -112,15 +106,10 @@ public:
 			grad -> positiveGradient(y_i, y_j, firstholder);
 			updateMinus(firstholder, j, localRho);
 
-      for (d = 0; d != D; d++) y_j[d] -= firstholder[d] * localRho;
 			m = 0;
       while (m != M) {
         k =  negAlias();
-<<<<<<<
-        ++shortcircuit;
-=======
 
->>>>>>>
         // Check that the draw isn't one of i's edges
         if (k == i ||
             k == j) continue;
@@ -132,7 +121,7 @@ public:
         updateMinus(secondholder, k, localRho);
         for (dimidxtype d = 0; d != D; ++d) firstholder[d] += secondholder[d];
       }
-       for (d = 0; d != D; d++) y_i[d] += firstholder[d] * localRho;
+      updateMinus(firstholder, i, - localRho);
     }
     rho -= (rhoIncrement * batchSize);
   }
@@ -201,9 +190,9 @@ arma::mat sgd(arma::mat coords,
 															                coords.memptr(),
 															                M,
 															                rho,
-															                n_samples);
 															                ps.memptr(),
-  else {
+															                n_samples);
+	else {
   	float moment = NumericVector(momentum)[0];
   	if (moment < 0) stop("Momentum cannot be negative.");
   	if (moment > 1) stop("Momentum canot be > 1.");
@@ -220,14 +209,12 @@ arma::mat sgd(arma::mat coords,
   }
   vertexidxtype N = coords.n_cols;
   distancetype* negweights = new distancetype[N];
-  if (useDegree) {
   for (vertexidxtype n = 0; n < N; ++n) negweights[n] = 0;
+  if (useDegree) {
   	for (edgeidxtype e = 0; e < targets_i.n_elem; ++e) negweights[targets_i[e]]++;
-  	for (vertexidxtype p = 0; p < N; ++p) {
   } else {
-         ++e) {
-         e != ps[p + 1];
-  		for (edgeidxtype e = ps[p];
+  	for (vertexidxtype p = 0; p < N; ++p) {
+  		for (edgeidxtype e = ps[p]; e != ps[p + 1]; ++e) {
   			//negweights[targets[e]] += weights[e];
   			negweights[p] += weights[e];
   		}
@@ -237,7 +224,7 @@ arma::mat sgd(arma::mat coords,
   v -> initAlias(weights.memptr(), negweights, N, sources_j.n_elem, seed);
   delete[] negweights;
 
-  v -> setGradient(alpha, gamma, D);
+  v -> setGradient(alpha, gamma);
   const int batchSize = 8192;
   const iterationtype barrier = (n_samples * .99 < n_samples - coords.n_cols) ? n_samples * .99 : n_samples - coords.n_cols;
 
@@ -251,6 +238,7 @@ arma::mat sgd(arma::mat coords,
 #pragma omp barrier
 #endif
   for (iterationtype eIdx = barrier; eIdx < n_samples; eIdx += batchSize) if (progress.increment(batchSize)) (*v)(eIdx, batchSize);
+  delete v;
   return coords;
 };
 
