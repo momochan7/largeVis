@@ -1,5 +1,3 @@
-
-
 #' Project a distance matrix into a lower-dimensional space.
 #'
 #' Takes as input a sparse matrix of the edge weights connecting each node to its nearest neighbors, and outputs
@@ -57,7 +55,7 @@
 #' CO2$Treatment <- as.integer(CO2$Treatment)
 #' co <- scale(as.matrix(CO2))
 #' # Very small datasets often produce a warning regarding the alias table.  This is safely ignored.
-#' suppressWarnings(vis <- largeVis(t(co), K = 20, sdg_batches = 1))
+#' suppressWarnings(vis <- largeVis(t(co), K = 20, sgd_batches = 1))
 #' suppressWarnings(coords <- projectKNNs(vis$wij))
 #' plot(t(coords))
 projectKNNs <- function(wij, # symmetric sparse matrix

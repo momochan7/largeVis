@@ -57,7 +57,7 @@ test_that("hdbscan doesn't crash with neighbors", {
 })
 
 test_that("hdbscan doesn't crash without 3 neighbors", {
-	expect_silent(hdbscan(edges, minPts = 10, K = 3, threads = 2, verbose = FALSE))
+	ted <- hdbscan(edges, neighbors = neighbors, minPts = 10, K = 3, threads = 2, verbose = FALSE)
 })
 
 clustering <- hdbscan(edges, minPts = 10, K = 3,  threads = 2, verbose = FALSE)
@@ -100,8 +100,8 @@ neighbors <- randomProjectionTreeSearch(dat, K = K,  threads = 2, verbose = FALS
 edges <- buildEdgeMatrix(data = dat, neighbors = neighbors, verbose = FALSE)
 
 test_that("as.dendrogram succeeds on iris4", {
-	hdobj <- hdbscan(edges, neighbors, minPts = 10, K = 4, threads = 2, verbose = FALSE)
-	dend <- as.dendrogram(hdobj)
+	hdobj <- hdbscan(edges, neighbors = neighbors, minPts = 10, K = 4, threads = 2, verbose = FALSE)
+	dend <- as_dendrogram_hdbscan(hdobj)
 	expect_equal(length(dend[[1]]), sum(hdobj$hierarchy$nodemembership == 1) + sum(hdobj$hierarchy$parent == 1) - 1)
 	expect_equal(sum(is.null(dend)), 0)
 	expect_equal(class(dend), "dendrogram")
@@ -110,7 +110,7 @@ test_that("as.dendrogram succeeds on iris4", {
 
 test_that("as.dendrogram succeeds on iris3", {
 	hdobj <- hdbscan(edges, minPts = 10, K = 3, threads = 2, verbose = FALSE)
-	dend <- as.dendrogram(hdobj)
+	dend <- as_dendrogram_hdbscan(hdobj)
 	expect_equal(length(dend), sum(hdobj$hierarchy$nodemembership == 1) + sum(hdobj$hierarchy$parent == 1) - 1)
 	expect_equal(sum(is.null(dend)), 0)
 	expect_equal(class(dend), "dendrogram")

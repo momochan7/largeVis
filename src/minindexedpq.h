@@ -18,6 +18,7 @@ private:
     PairNode* nextSibling = nullptr;
     PairNode* prev = nullptr;
   };
+	int sz = 0;
 
 	typedef PairNode* NodePointer;
 
@@ -74,6 +75,7 @@ private:
 		PointerArray[n].leftChild = PointerArray[n].nextSibling = PointerArray[n].prev = nullptr;
 		if (root == NULL) root = newNode;
 		else compareAndLink(root, newNode);
+		sz++;
 		return newNode;
 	}
 
@@ -88,7 +90,12 @@ public:
 		else root = combineSiblings(root->leftChild);
 		VIDX ret = oldRoot -> index;
 		oldRoot -> present = false;
+		sz--;
 		return ret;
+	}
+
+	int size() const {
+		return sz;
 	}
 
 	bool isEmpty() const {
@@ -111,19 +118,18 @@ public:
 	};
 
   bool decreaseIf(const VIDX& i, const D &newVal) {
+  	if (PointerArray[i].distance < newVal) return false;
   	NodePointer p = & PointerArray[i];
-  	if (p->distance < newVal) return false;
   	p->distance = newVal;
-  	if (p != root) {
-  		if (p->nextSibling != NULL)
-  			p->nextSibling->prev = p->prev;
-  		if (p->prev->leftChild == p)
-  			p->prev->leftChild = p->nextSibling;
-  		else
-  			p->prev->nextSibling = p->nextSibling;
-  		p->nextSibling = NULL;
-  		compareAndLink(root, p);
-  	}
+  	if (p == root) return true;
+		if (p->nextSibling != NULL)
+			p->nextSibling->prev = p->prev;
+		if (p->prev->leftChild == p)
+			p->prev->leftChild = p->nextSibling;
+		else
+			p->prev->nextSibling = p->nextSibling;
+		p->nextSibling = NULL;
+		compareAndLink(root, p);
   	return true;
   }
 

@@ -33,12 +33,16 @@ public:
 
   void makeCoreDistances(const arma::sp_mat& edges,
                          const IntegerMatrix& neighbors,
-                         const int K) {
+                         const int& K) {
   	if (neighbors.nrow() < K) stop("Specified K bigger than the number of neighbors in the adjacency matrix.");
- 	if (K < 4) stop("K must be >= 4 when used with neighbors.");
+ 		//if (K < 4) stop("K must be >= 4 when used with neighbors.");
+ 		Rcout << "\nneighbors" << K;
     coreDistances = arma::vec(N);
+    Rcout << "\ncore";
     IntegerVector kthNeighbors = neighbors.row(K - 1);
+    Rcout << "\narray ";
     for (long long n = 0; n < N; n++) if (p.increment()) {
+    	Rcout << n << "\t";
     	long long q = kthNeighbors[n];
     	if (q == -1 || q == NA_INTEGER) stop("Insufficient neighbors.");
       coreDistances[n] = edges(n, q);
@@ -119,11 +123,13 @@ List hdbscanc(const arma::sp_mat& edges,
   if (neighbors.isNotNull()) { // 1 N
     IntegerMatrix neigh = IntegerMatrix(neighbors);
     object.makeCoreDistances(edges, neigh, K);
+    Rcout << "\nprim";
     object.primsAlgorithm(edges, neigh); // 1 N
   } else {
     object.makeCoreDistances(edges, K);
   	object.primsAlgorithm(edges);
   }
+  Rcout << "\nprocess";
   arma::mat clusters = object.process(minPts);
   arma::ivec tree = arma::ivec(edges.n_cols);
   long long* mst = object.getMinimumSpanningTree();

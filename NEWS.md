@@ -1,12 +1,13 @@
 ### largeVis 0.1.10
-* Added `as.dendrogram.hdbscan` function to make hdbscan objects compatible with other R hierarchical clustering implementations. 
+* `projectKNNs` now supports momentum training and lets the user select the negative sampling method.  Momentum can make the sgd phase of the algorithm substantiallly faster. 
+* OPTICS and DBSCAN are back, rewritten, and substantially improved.
+		+	Both now require both edges and neighbors in all cases, because there is no performance advantage to this implementation unless both are provided. 
+		+ The functions are renamed `lv_dbscan` and `lv_optics`, respectively, to avoid naming conflicts with the dbscan package. 
+* Added `hdbscanToDendrogram` function to make hdbscan objects compatible with other R hierarchical clustering implementations. 
 * New utility function `sgdBatches` helps estimate training time for datasets. 
 * Fixed bug in estimation of `sgd_batches` where 10x to many batches would be used for dataset < 10000 nodes. 
 * `buildEdgeMatrix` and `distance` now store the `distance_method` in attribute `method` of the returned object. 
-* `projectKNNs` now has features for training with momentum, and controlling the method for weighting negative samples. Momentum can greatly reduce the required number of sgd_batches, resulting in substantial performance increases.  The parameters are explained in the "Momentum and useDegree" vignette.
-* OPTICS and DBSCAN are back, rewritten, and substantially improved.
-		+	Both now require both edges and neighbors in all cases, because there is no performance advantage to this implementation unless both are provided. 
-		+ The functions are renamed lv_dbscan and lv_optics, respectively, to avoid naming conflicts with the dbscan package. 
+* Third vignette covers momentum, the `useDegree` parameter, and clustering. 
 
 ### largeVis 0.1.9.3
 Fix to hdbscan selecting wrong K, and gplot failing. 

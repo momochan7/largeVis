@@ -47,7 +47,7 @@ protected:
   arma::vec coreDistances;
 
   VIDX starterIndex = 0;
-  PairingHeap<VIDX, double>* Q;
+  PairingHeap<VIDX, double> Q;
   unique_ptr< VIDX[] >   	minimum_spanning_tree;
 
   VIDX counter = 0;
@@ -57,8 +57,8 @@ protected:
   // Used after condensation to speed-up remaining phases
   set< VIDX > roots;
 
-  UF(VIDX N, bool verbose, bool pq) : N{N}, p(Progress(10 * N, verbose)) {
-	  Q = new PairingHeap<VIDX, double>(N);
+  UF(VIDX N, bool verbose, bool pq) : N{N}, p(Progress(10 * N, verbose)),
+  	Q(PairingHeap<VIDX, double>(N)) {
   	minimum_spanning_tree = unique_ptr<VIDX[]>(new VIDX[N]);
 #ifdef DEBUG
   	setupTest();
@@ -98,20 +98,20 @@ protected:
   }
 
   void updateVWD(VIDX v, VIDX w, double d) {
-  	if (Q -> contains(w) || w == starterIndex ) if (Q -> decreaseIf(w, getMRD(v, w, d))) minimum_spanning_tree[w] = v;
+  	if (Q.contains(w) || w == starterIndex ) if (Q.decreaseIf(w, getMRD(v, w, d))) minimum_spanning_tree[w] = v;
   }
 
   void primsAlgorithm(const arma::sp_mat& edges, VIDX start) {
   	starterIndex = start;
   	for (VIDX n = 0; n != N; ++n) minimum_spanning_tree[n] = -1;
-  	Q -> batchInsert(N, start);
-  	Q -> decreaseIf(starterIndex, -1);
+  	Q.batchInsert(N, start);
+  	Q.decreaseIf(starterIndex, -1);
   	p.increment(N);
   	VIDX v;
-  	while (! Q -> isEmpty()) {
-  		v = Q -> pop();
+  	while (! Q.isEmpty()) {
+  		v = Q.pop();
   		if (! p.increment()) break;
-	  	if (Q -> keyOf(v) == INFINITY || Q -> keyOf(v) == -1) starterIndex = v;
+	  	if (Q.keyOf(v) == INFINITY || Q.keyOf(v) == -1) starterIndex = v;
 		  for (auto it = edges.begin_row(v);
          it != edges.end_row(v);
          it++) {
@@ -128,14 +128,17 @@ protected:
   void primsAlgorithm(const arma::sp_mat& edges, const IntegerMatrix& neighbors, VIDX start) {
   	starterIndex = start;
   	for (VIDX n = 0; n != N; ++n) minimum_spanning_tree[n] = -1;
-  	Q -> batchInsert(N, start);
-  	Q -> decreaseIf(starterIndex, -1);
+  	Rcout << "\nmake pq";
+  	Q.batchInsert(N, start);
+  	Rcout << "\nmade";
+  	Q.decreaseIf(starterIndex, -1);
   	p.increment(N);
   	VIDX v;
-  	while (! Q -> isEmpty()) {
-  		v = Q -> pop();
+  	while (! Q.isEmpty()) {
+  		Rcout << Q.size() << " ";
+  		v = Q.pop();
   		if (! p.increment()) break;
-  		if (Q -> keyOf(v) == INFINITY || Q -> keyOf(v) == -1) starterIndex = v;
+  		if (Q.keyOf(v) == INFINITY || Q.keyOf(v) == -1) starterIndex = v;
   		IntegerVector vNeighbors = neighbors.column(v);
   		for (auto it = vNeighbors.begin();
          	 it != vNeighbors.end() && *it != -1;
@@ -194,7 +197,7 @@ protected:
   	container.reserve(N);
   	typename vector< iddist >::iterator adder = container.end();
   	for (VIDX n = 0; n != N; ++n) {
-  		container.emplace(adder++, n, Q -> keyOf(n));
+  		container.emplace(adder++, n, Q.keyOf(n));
   		if (n % 50 == 0 ) if (!p.increment(50)) return;
   	}
   	DistanceSorter srtr = DistanceSorter(CompareDist(), container);
