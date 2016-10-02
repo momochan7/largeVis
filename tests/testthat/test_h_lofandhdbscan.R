@@ -57,7 +57,13 @@ test_that("hdbscan doesn't crash with neighbors", {
 })
 
 test_that("hdbscan doesn't crash without 3 neighbors", {
-	ted <- hdbscan(edges, neighbors = neighbors, minPts = 10, K = 3, threads = 2, verbose = FALSE)
+	expect_silent(hdbscan(edges, neighbors = neighbors, minPts = 10, K = 3, threads = 2, verbose = FALSE))
+})
+
+test_that("hdbscan accepts a largevis object", {
+	vis <- largeVis(dat, sgd_batches = 1, threads = 2)
+	expect_silent(clusters <- hdbscan(vis, minPts = 10, K = 3, threads = 2, verbose = FALSE))
+	expect_equal(length(unique(clusters$clusters, 0)), 3)
 })
 
 clustering <- hdbscan(edges, minPts = 10, K = 3,  threads = 2, verbose = FALSE)

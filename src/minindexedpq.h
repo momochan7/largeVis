@@ -18,7 +18,7 @@ private:
     PairNode* nextSibling = nullptr;
     PairNode* prev = nullptr;
   };
-	int sz = 0;
+	VIDX sz = 0;
 
 	typedef PairNode* NodePointer;
 
@@ -28,7 +28,7 @@ private:
 
 	void compareAndLink(NodePointer &first, NodePointer second) {
 		if (second == NULL) return;
-		if (second->distance < first->distance) {
+		if (first->distance >= second->distance) {
 			second->prev = first->prev;
 			first->prev = second;
 			first->nextSibling = second->leftChild;
@@ -67,18 +67,6 @@ private:
 		return treeArray[0];
 	}
 
-	NodePointer Insert(VIDX &n, D &x) {
-		NodePointer newNode = & PointerArray[n];
-		PointerArray[n].present = true;
-		PointerArray[n].distance = x;
-		PointerArray[n].index = n;
-		PointerArray[n].leftChild = PointerArray[n].nextSibling = PointerArray[n].prev = nullptr;
-		if (root == NULL) root = newNode;
-		else compareAndLink(root, newNode);
-		sz++;
-		return newNode;
-	}
-
 public:
 	PairingHeap(VIDX N) : root(NULL), MaxSize{N},
 												PointerArray(vector< PairNode >(N)) {
@@ -94,7 +82,7 @@ public:
 		return ret;
 	}
 
-	int size() const {
+	VIDX size() const {
 		return sz;
 	}
 
@@ -106,22 +94,28 @@ public:
 		return PointerArray[i].present;
 	}
 
-	void insert(VIDX& n, D &x) {
-		Insert(n, x);
+	void insert(VIDX &n, D &x) {
+		PointerArray[n].present = true;
+		PointerArray[n].distance = x;
+		PointerArray[n].index = n;
+		PointerArray[n].leftChild = PointerArray[n].nextSibling = PointerArray[n].prev = nullptr;
+		if (root == NULL) root = &PointerArray[n];
+		else compareAndLink(root, &PointerArray[n]);
+		sz++;
 	}
 
 	void batchInsert(const VIDX& n, const VIDX& start) {
 		for (VIDX i = 0; i != n; i++) {
 			D key = (start == i) ? -1 : INFINITY;
-			Insert(i, key);
+			insert(i, key);
 		}
 	};
 
-  bool decreaseIf(const VIDX& i, const D &newVal) {
-  	if (PointerArray[i].distance < newVal) return false;
-  	NodePointer p = & PointerArray[i];
-  	p->distance = newVal;
-  	if (p == root) return true;
+	bool decreaseIf(const VIDX& i, const D &newVal) {
+		if (PointerArray[i].distance < newVal) return false;
+		NodePointer p = & PointerArray[i];
+		p->distance = newVal;
+		if (p == root) return true;
 		if (p->nextSibling != NULL)
 			p->nextSibling->prev = p->prev;
 		if (p->prev->leftChild == p)
@@ -130,8 +124,8 @@ public:
 			p->prev->nextSibling = p->nextSibling;
 		p->nextSibling = NULL;
 		compareAndLink(root, p);
-  	return true;
-  }
+		return true;
+	}
 
   D keyOf(const VIDX& i) const {
   	return PointerArray[i].distance;
